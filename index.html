@@ -14,6 +14,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden; /* لمنع التمرير في حالة وجود أجزاء غير مرئية */
         }
 
         #video-container {
@@ -21,11 +22,22 @@
             height: 100%;
             background: #000;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #jwplayerDiv {
             width: 100%;
             height: 100%;
+        }
+
+        /* ضبط الفيديو ليملأ الشاشة بالكامل */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* يملأ الشاشة ويحافظ على الأبعاد */
+            position: absolute;
         }
 
         /* إخفاء زر التوسيع */
