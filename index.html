@@ -99,6 +99,11 @@
                     }
                 });
 
+                // تشغيل الفيديو في وضع ملء الشاشة مباشرة
+                player.on('ready', () => {
+                    player.setFullscreen(true);
+                });
+
                 // إضافة ميزة التدوير عند ملء الشاشة
                 player.on('fullscreen', (event) => {
                     if (event.fullscreen) {
