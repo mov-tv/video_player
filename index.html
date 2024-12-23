@@ -2,94 +2,146 @@
 <html>
 <head>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>Code Themes DRM Player</title>
-    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
-    <script src="https://assets.nlm.nih.gov/jwplayer/8/jwplayer.js"></script>
+    <title>Fluid-like DRM Player</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
-    <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
-    <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet"/>  
     <style>
         body {
-            background-color: #000000;
+            background-color: #000;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        #player { 
-            position: fixed;
             display: flex;
-            align-items: center;
             justify-content: center;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        video {
-            max-width: 100%;
-            max-height: 100%;
+        #player-container {
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        #video {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            padding: 5px 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #player-container:hover .controls {
+            opacity: 1;
+        }
+
+        .button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 5px;
+            background: #444;
+            border-radius: 5px;
+            margin: 0 10px;
+            position: relative;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: #6F00FF;
+            width: 0%;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="player">
+    <div id="player-container">
         <video id="video" autoplay controls></video>
+        <div class="controls">
+            <button id="play-pause" class="button">⏯</button>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <button id="mute-unmute" class="button">🔇</button>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const playerType = urlParams.get("player") || "fluid";
-            const manifestUri = urlParams.get("manifest") || "";
-            const drmKey = urlParams.get("drmkey") || "";
+            const manifestUri = urlParams.get("manifest");
+            const drmKey = urlParams.get("drmkey");
 
-            if (playerType === "shaka" && manifestUri && drmKey) {
-                const video = document.getElementById('video');
-                const [keyId, keyValue] = drmKey.split(":");
-
-                const player = new shaka.Player(video);
-
-                player.configure({
-                    drm: {
-                        clearKeys: {
-                            [keyId]: keyValue
-                        }
-                    }
-                });
-
-                player.addEventListener('error', (event) => {
-                    console.error('Error code', event.detail.code, 'object', event.detail);
-                });
-
-                try {
-                    await player.load(manifestUri);
-                    console.log('The video has been successfully loaded!');
-                } catch (error) {
-                    console.error('Error loading video', error);
-                }
-            } else if (playerType === "fluid") {
-                const videoElement = document.createElement("video");
-                videoElement.id = "video-id";
-                videoElement.style.width = "100%";
-                videoElement.style.height = "100%";
-                document.getElementById("player").appendChild(videoElement);
-
-                fluidPlayer('video-id', {
-                    layoutControls: {
-                        autoplay: true,
-                        mute: false
-                    }
-                });
-            } else {
-                console.error("Invalid player type or missing parameters");
+            if (!manifestUri || !drmKey) {
+                console.error("Missing manifest or DRM key parameters!");
+                return;
             }
+
+            const video = document.getElementById('video');
+            const [keyId, keyValue] = drmKey.split(":");
+            const player = new shaka.Player(video);
+
+            player.configure({
+                drm: {
+                    clearKeys: {
+                        [keyId]: keyValue
+                    }
+                }
+            });
+
+            player.addEventListener('error', (event) => {
+                console.error('Error code', event.detail.code, 'object', event.detail);
+            });
+
+            try {
+                await player.load(manifestUri);
+                console.log('The video has been successfully loaded!');
+            } catch (error) {
+                console.error('Error loading video', error);
+            }
+
+            // Custom controls functionality
+            const playPauseButton = document.getElementById('play-pause');
+            const muteUnmuteButton = document.getElementById('mute-unmute');
+            const progressBar = document.querySelector('.progress-bar .progress');
+
+            playPauseButton.addEventListener('click', () => {
+                if (video.paused) {
+                    video.play();
+                    playPauseButton.textContent = '⏸';
+                } else {
+                    video.pause();
+                    playPauseButton.textContent = '▶';
+                }
+            });
+
+            muteUnmuteButton.addEventListener('click', () => {
+                video.muted = !video.muted;
+                muteUnmuteButton.textContent = video.muted ? '🔊' : '🔇';
+            });
+
+            video.addEventListener('timeupdate', () => {
+                const percentage = (video.currentTime / video.duration) * 100;
+                progressBar.style.width = percentage + '%';
+            });
         });
     </script>
 </body>
