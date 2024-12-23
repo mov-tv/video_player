@@ -117,6 +117,11 @@
                     }
                 });
 
+                // تعطيل الضغط المزدوج لتغيير وضع الشاشة
+                player.on('displayClick', () => {
+                    player.setFullscreen(true); // إجبار البقاء في وضع ملء الشاشة
+                });
+
             } catch (error) {
                 console.error('حدث خطأ أثناء تحميل الفيديو:', error);
             }
