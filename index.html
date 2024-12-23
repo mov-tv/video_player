@@ -2,90 +2,38 @@
 <html>
 <head>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>Fluid-like DRM Player</title>
+    <title>FluidPlayer with DRM</title>
+    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
     <style>
         body {
-            background-color: #000;
             margin: 0;
             padding: 0;
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
         }
 
-        #player-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 0;
-        }
-
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 10px;
-            gap: 15px;
-        }
-
-        .btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .btn:hover {
-            transform: scale(1.2);
-        }
-
-        #volume {
-            width: 100px;
-            cursor: pointer;
+        video {
+            width: 80%;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <div id="player-container">
-        <video id="video" autoplay muted playsinline></video>
-        <div id="controls">
-            <button id="play-pause" class="btn">▶</button>
-            <button id="mute" class="btn">🔊</button>
-            <input id="volume" type="range" min="0" max="1" step="0.1" value="1">
-        </div>
-    </div>
+    <video id="video-id" controls></video>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const manifestUri = urlParams.get("manifest");
-            const drmKey = urlParams.get("drmkey");
+            const manifestUri = 'https://ssc-news-live-enc.edgenextcdn.net/out/v1/ef466f43623c4bbaa3f905b566ec35ea/index.mpd';
+            const drmKey = '3d04975236a44f62857d181597705ee6:362133e9cb13189ad4fe095ced216f60';
 
-            if (!manifestUri || !drmKey) {
-                console.error("Missing manifest or DRM key parameters!");
-                return;
-            }
-
-            const video = document.getElementById('video');
-            const [keyId, keyValue] = drmKey.split(":");
+            const video = document.getElementById('video-id');
             const player = new shaka.Player(video);
 
+            const [keyId, keyValue] = drmKey.split(':');
             player.configure({
                 drm: {
                     clearKeys: {
@@ -94,40 +42,24 @@
                 }
             });
 
-            player.addEventListener('error', (event) => {
-                console.error('Error code', event.detail.code, 'object', event.detail);
-            });
-
             try {
                 await player.load(manifestUri);
-                console.log('The video has been successfully loaded!');
+                console.log('DRM-protected video loaded successfully.');
+
+                // Initialize FluidPlayer after Shaka loads the video
+                fluidPlayer('video-id', {
+                    layoutControls: {
+                        primaryColor: "#6F00FF",
+                        autoPlay: true,
+                        mute: false,
+                        playbackRateEnabled: true,
+                        allowDownload: false,
+                        fillToContainer: true
+                    }
+                });
             } catch (error) {
-                console.error('Error loading video', error);
+                console.error('Error loading DRM video', error);
             }
-
-            // عناصر التحكم
-            const playPauseButton = document.getElementById('play-pause');
-            const muteButton = document.getElementById('mute');
-            const volumeSlider = document.getElementById('volume');
-
-            playPauseButton.addEventListener('click', () => {
-                if (video.paused) {
-                    video.play();
-                    playPauseButton.textContent = '⏸';
-                } else {
-                    video.pause();
-                    playPauseButton.textContent = '▶';
-                }
-            });
-
-            muteButton.addEventListener('click', () => {
-                video.muted = !video.muted;
-                muteButton.textContent = video.muted ? '🔇' : '🔊';
-            });
-
-            volumeSlider.addEventListener('input', () => {
-                video.volume = volumeSlider.value;
-            });
         });
     </script>
 </body>
