@@ -28,11 +28,47 @@
             object-fit: cover;
             border-radius: 0;
         }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            gap: 15px;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.2);
+        }
+
+        #volume {
+            width: 100px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="player-container">
         <video id="video" autoplay muted playsinline></video>
+        <div id="controls">
+            <button id="play-pause" class="btn">▶</button>
+            <button id="mute" class="btn">🔊</button>
+            <input id="volume" type="range" min="0" max="1" step="0.1" value="1">
+        </div>
     </div>
 
     <script>
@@ -68,6 +104,30 @@
             } catch (error) {
                 console.error('Error loading video', error);
             }
+
+            // عناصر التحكم
+            const playPauseButton = document.getElementById('play-pause');
+            const muteButton = document.getElementById('mute');
+            const volumeSlider = document.getElementById('volume');
+
+            playPauseButton.addEventListener('click', () => {
+                if (video.paused) {
+                    video.play();
+                    playPauseButton.textContent = '⏸';
+                } else {
+                    video.pause();
+                    playPauseButton.textContent = '▶';
+                }
+            });
+
+            muteButton.addEventListener('click', () => {
+                video.muted = !video.muted;
+                muteButton.textContent = video.muted ? '🔇' : '🔊';
+            });
+
+            volumeSlider.addEventListener('input', () => {
+                video.volume = volumeSlider.value;
+            });
         });
     </script>
 </body>
