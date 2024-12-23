@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <meta content='width=device-width, initial-scale=1' name='viewport'/>
+    <title>Code Themes Player</title>
+    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+    <script src="https://assets.nlm.nih.gov/jwplayer/8/jwplayer.js"></script>
+    <script src="https://codexfile.vercel.app/v/kK1ZOyt3qFSLK4A/playerjs.js"></script>
+    <script src="https://reference.dashif.org/dash.js/v4.7.1/dist/dash.all.debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.7.1/dash.all.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/level-selector@latest/dist/level-selector.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/clappr-chromecast-plugin@latest/dist/clappr-chromecast-plugin.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/clappr-pip@latest/dist/clappr-pip.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/clappr-playback-rate-plugin@latest/dist/clappr-playback-rate-plugin.min.js"></script>
+    <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet"/>  
+        <style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #player { 
+            position: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        .vjs-loading-spinner {
+      display: none !important;
+        } 
+    </style>
+        <style type="text/css">
+.jwplayer.jw-flag-aspect-mode, .video-js {max-width:100% !important; max-height: 100% !important; position:fixed !important;}
+</style>
+</head>
+<body>
+    <div id="player">
+    </div>
+  <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
+    <script>
+        var urlParams = new URLSearchParams(window.location.search);
+        var playerType = urlParams.get("player") || "fluid";
+        var videoLink = urlParams.get("link") || "";
+        var videoType = urlParams.get("type") || "mp4";
+        var autoplay = urlParams.get("atp") === "true";
+        var conTrols= urlParams.get("crts") === "true";
+        var posterImage = urlParams.get("poster") || "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjtrgySAXB6n09ed4B0n-JWEY5hJMb54bqFx7e9AFRjzOiioOKCO2G9WTugf4IZnX3zmdYGY_O6xdqDZ2pQGUUczpJPXpfVGb7A0RDpQ693WdGcrp4eZU0idSuxZjZYTsufGbNWCuwtoFkZCwzX95iStw8CBMLZ-TGK8sMC8FPhIgQ8JwFlyuAUcPTQ5cy4/s1600/20230916_003128.png";
+        var primaryColor = urlParams.get("cor") || "6F00FF";
+        primaryColor = primaryColor.replace("#", "");
+
+if (!videoLink.startsWith("http") && videoLink.includes("dai.ly/")) {
+            var videoId = videoLink.split("dai.ly/")[1];
+            videoLink = `https://www.dailymotion.com/embed/video/${videoId}`;
+        }
+            
+        if (videoLink.endsWith(".ts")) {
+            videoLink = videoLink.replace(".ts", ".m3u8");
+        }
+
+        if (playerType === "fluid") {
+            var sourceType = getVideoSourceType(videoType);
+            var videoSources = getVideoSources(videoLink, sourceType);
+
+            var videoElement = document.createElement("video");
+            videoElement.id = "video-id";
+            videoElement.style.width = "100%";
+            videoElement.style.height = "100%";
+            videoSources.forEach(function (source) {
+                var sourceElement = document.createElement("source");
+                sourceElement.src = source.src;
+                sourceElement.type = source.type;
+                videoElement.appendChild(sourceElement);
+            });
+            document.getElementById("player").appendChild(videoElement);                  
+                var myFP = fluidPlayer('video-id', {       
+            "layoutControls": {
+                "controlBar": {
+                    "autoHideTimeout": 3,
+                    "animated": true,
+                    "autoHide": true
+                },
+                "htmlOnPauseBlock": {
+                    "html": null,
+                    "height": null,
+                    "width": null
+                },
+                "autoPlay": autoplay,
+                "mute": autoplay,
+                "allowTheatre": false,
+                "playPauseAnimation": false,
+                "playbackRateEnabled": true,
+                "allowDownload": false,
+                "playButtonShowing": false,
+                "fillToContainer": true,
+                "primaryColor": "#" + primaryColor,
+                "posterImage": posterImage
+            },
+            "vastOptions": {
+                "adList": [],
+                "adCTAText": false,
+                "adCTATextPosition": ""
+            }
+        });
+
+            myFP.updateOptions();      
+
+        } if (playerType === "fluidnull") {
+                var sourceType = getVideoSourceType(videoType);
+            var videoSources = getVideoSources(videoLink, sourceType);
+
+            var videoElement = document.createElement("video");
+            videoElement.id = "video-id";
+            videoElement.style.width = "100%";
+            videoElement.style.height = "100%";
+            videoSources.forEach(function (source) {
+                var sourceElement = document.createElement("source");
+                sourceElement.src = source.src;
+                sourceElement.type = source.type;
+                videoElement.appendChild(sourceElement);
+            });
+            document.getElementById("player").appendChild(videoElement);                  
+                var myFP = fluidPlayer('video-id', {       
+            "layoutControls": {
+            
+            }
+        });
+
+            myFP.updateOptions();
+        } else if (playerType === "jw") {
+            jwplayer.key = "eNFaXCjyURVoCCGiHp7HTQ3hDhE/AfL0g8VE1fRbL84=";
+            
+            var jwPlayerInstance = jwplayer("player");
+            jwPlayerInstance.setup({
+                sources: [{ "type": videoType, "file": videoLink }],
+                image: posterImage,
+                autostart: autoplay,
+                controls: conTrols,
+                position: "fixed",
+                width: "100%",
+                height: "100%",
+                abouttext: "<strong>Code Th Player Api</strong>",
+                aboutlink: "",
+                logo: {
+                    file: "",
+                    position: "top-left",
+                    margin: "10"
+                }
+            });
+        } else if (playerType === "js") {
+            var jsAutoplay = autoplay ? 1 : 0;
+            var jsPlayer = new Playerjs({
+                id: "player",
+                file: videoLink,
+                poster: posterImage,
+                autoplay: jsAutoplay,
+                loop: true
+               });
+        } else if (playerType === "vdjs") {
+var videoElement = document.createElement("video");
+videoElement.id = "my-video";
+videoElement.className = "video-js vjs-default-skin";
+videoElement.controls = conTrols;
+videoElement.poster = posterImage;
+videoElement.setAttribute("data-setup", "{}");
+videoElement.style.width = "100%";
+videoElement.style.height = "100%";
+videoElement.autoplay = autoplay;
+
+var divContainer = document.getElementById("player");
+divContainer.appendChild(videoElement);
+var videoLinkD = videoLink;
+
+var player = videojs("my-video");
+var firstClick = true;
+var videoSources = [
+  { src: videoLinkD, type: "video/mp4" },
+  { src: videoLinkD, type: "video/webm" },
+  { src: videoLinkD, type: "application/x-mpegURL" },
+  { src: videoLinkD, type: "video/x-matroska" },
+  { src: videoLinkD, type: "video/MP2T" },
+  { src: videoLinkD, type: "application/dash+xml" },
+  { src: videoLinkD, type: "application/vnd.apple.mpegurl" }
+];
+
+videoSources.forEach(function (sourceInfo) {
+  var source = document.createElement("source");
+  source.src = sourceInfo.src;
+  source.type = sourceInfo.type;
+  videoElement.appendChild(source);
+});
+
+document.body.addEventListener('click', function (event) {
+  if (firstClick && event.target === videoElement) {
+    player.play();
+    firstClick = false;
+  }
+});
+} else if (playerType === "clappr") {
+        window.onload = function() {
+            var player = new Clappr.Player({
+                source: videoLink,
+                poster: posterImage,
+                parentId: '#player',
+                mimeType: sourceType,
+                muted: false,
+                loop: true,
+                plugins: [LevelSelector, ChromecastPlugin, ClapprPip.PipButton, ClapprPip.PipPlugin, DashShakaPlayback, Clappr.MediaControl, PlaybackRatePlugin],
+                events: {
+                    onReady: function() {
+                        var plugin = this.getPlugin('click_to_pause');
+                        plugin && plugin.disable();
+                    },
+                },
+                height: '100%',
+                width: '100%',
+                autoPlay: autoplay,
+                shakaConfiguration: {
+                    manifest: { retryParameters: { maxAttempts: Infinity } },
+                    streaming: { retryParameters: { maxAttempts: Infinity } },
+                    drm: { retryParameters: { maxAttempts: Infinity } },
+                },
+                mediacontrol: { seekbar: "#" + primaryColor, buttons: "#FFFFFF" },
+                playbackRateConfig: {
+                    defaultValue: '1.00x',
+                    options: [
+                        { value: '0.10', label: '0.10x' },
+                        { value: '0.25', label: '0.25x' },
+                        { value: '0.50', label: '0.50x' },
+                        { value: '0.75', label: '0.75x' },
+                        { value: '1.00', label: '1.00x' },
+                        { value: '1.25', label: '1.25x' },
+                        { value: '1.50', label: '1.50x' },
+                        { value: '1.75', label: '1.75x' },
+                        { value: '2.00', label: '2.00x' },
+                    ],
+                },
+            });
+        };
+    }
+
+        function getVideoSourceType(type) {
+            var mimeTypes = {
+                "mp4": "video/mp4",
+                "m3u8": "application/x-mpegURL",
+                "mkv": "video/x-matroska",
+                "ts": "video/MP2T",
+                "mpd": "application/dash+xml",
+                "notype": "application/vnd.apple.mpegurl"
+            };
+            return mimeTypes[type] || "";
+        }
+
+        function getVideoSources(videoUrl, sourceType) {
+            return [
+                { src: videoUrl, type: sourceType }
+            ];
+        }
+    </script>
+</body>
+</html>
