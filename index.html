@@ -96,15 +96,18 @@
                     },
                     skin: {
                         name: "glow"
-                    },
-                    controls: {
-                        fullscreen: false // تعطيل زر ملء الشاشة
                     }
                 });
 
                 // تشغيل الفيديو في وضع ملء الشاشة مباشرة
                 player.on('ready', () => {
                     player.setFullscreen(true);
+
+                    // البحث عن زر ملء الشاشة وإزالته نهائيًا
+                    const fullscreenButton = document.querySelector('.jw-icon-fullscreen');
+                    if (fullscreenButton) {
+                        fullscreenButton.parentNode.removeChild(fullscreenButton);
+                    }
                 });
 
                 // إضافة ميزة التدوير عند ملء الشاشة
