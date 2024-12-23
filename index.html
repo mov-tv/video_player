@@ -16,25 +16,19 @@
             background: #000;
         }
 
-        #video-container {
+        /* الفيديو يملأ الشاشة مع الحفاظ على الأبعاد الأصلية */
+        #jwplayerDiv {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
             width: 100%;
             height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* فيديو يملأ الشاشة بالكامل */
         video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* يملأ الشاشة بالكامل */
+            object-fit: fill; /* ملء الشاشة دون التأثير على الأبعاد الأصلية */
         }
 
         /* إخفاء زر التوسيع في JW Player */
@@ -44,9 +38,7 @@
     </style>
 </head>
 <body>
-    <div id="video-container">
-        <div id="jwplayerDiv"></div>
-    </div>
+    <div id="jwplayerDiv"></div>
 
     <script>
         // دالة لاستخراج المعلمات من الرابط
@@ -56,17 +48,6 @@
                 manifest: params.get('manifest'),
                 drmKey: params.get('drmkey')
             };
-        }
-
-        // تفعيل ملء الشاشة دائمًا
-        async function enableFullscreen(element) {
-            if (element.requestFullscreen) {
-                await element.requestFullscreen();
-            } else if (element.webkitRequestFullscreen) {
-                await element.webkitRequestFullscreen();
-            } else if (element.msRequestFullscreen) {
-                await element.msRequestFullscreen();
-            }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -83,7 +64,7 @@
                 return;
             }
 
-            // تشغيل الفيديو باستخدام Shaka Player
+            // إعداد شاكابلير
             const videoContainer = document.createElement('video');
             videoContainer.controls = true;
             videoContainer.style.display = 'none'; // إخفاء الفيديو لتجنب تداخل التصميم
@@ -121,12 +102,6 @@
                         name: "glow"
                     }
                 });
-
-                // فرض وضع ملء الشاشة دائمًا
-                player.on('ready', async () => {
-                    await enableFullscreen(document.getElementById('video-container'));
-                });
-
             } catch (error) {
                 console.error('حدث خطأ أثناء تحميل الفيديو:', error);
             }
