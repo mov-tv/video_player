@@ -16,7 +16,7 @@
             background: #000;
         }
 
-        /* الفيديو يملأ الشاشة مع الحفاظ على الأبعاد الأصلية */
+        /* الفيديو يبقى بحجم الشاشة مع الحفاظ على نسب الأبعاد الأصلية */
         #jwplayerDiv {
             position: absolute;
             top: 0;
@@ -28,7 +28,7 @@
         video {
             width: 100%;
             height: 100%;
-            object-fit: fill; /* ملء الشاشة دون التأثير على الأبعاد الأصلية */
+            object-fit: contain; /* الحفاظ على الأبعاد الأصلية وملء الشاشة بما يناسب */
         }
 
         /* إخفاء زر التوسيع في JW Player */
@@ -100,8 +100,18 @@
                     },
                     skin: {
                         name: "glow"
+                    },
+                    // تعطيل وضع ملء الشاشة تمامًا
+                    controlbar: {
+                        fullscreen: false // تعطيل زر ملء الشاشة
                     }
                 });
+
+                // تعطيل وظيفة النقر المزدوج لملء الشاشة
+                document.getElementById("jwplayerDiv").addEventListener("dblclick", function(event) {
+                    event.preventDefault(); // منع عمل النقر المزدوج
+                });
+
             } catch (error) {
                 console.error('حدث خطأ أثناء تحميل الفيديو:', error);
             }
