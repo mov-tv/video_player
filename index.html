@@ -2,9 +2,10 @@
 <html>
 <head>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>DRM Player with Quality Selector</title>
+    <title>Custom DRM Player</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
     <style>
+        /* تعيين إعدادات الصفحة */
         body {
             margin: 0;
             padding: 0;
@@ -13,16 +14,18 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: #fff;
         }
 
+        /* تصميم المشغل */
         #player-container {
             position: relative;
             width: 80%;
-            max-width: 800px;
-            background-color: #000;
+            max-width: 900px;
+            aspect-ratio: 16 / 9;
+            background: #000;
             border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
         }
 
         video {
@@ -32,6 +35,7 @@
             background-color: #000;
         }
 
+        /* شريط التحكم */
         #controls {
             position: absolute;
             bottom: 0;
@@ -40,11 +44,27 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px;
+            padding: 10px 20px;
+        }
+
+        /* أزرار التحكم */
+        .control-button {
+            background: #6F00FF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .control-button:hover {
+            background: #4a00b6;
         }
 
         #quality-selector {
-            background: #6F00FF;
+            background: #333;
             color: white;
             border: none;
             padding: 5px 10px;
@@ -62,9 +82,10 @@
     <div id="player-container">
         <video id="video" autoplay controls></video>
         <div id="controls">
-            <div>
-                <button id="quality-selector">Quality</button>
-            </div>
+            <button id="play-pause" class="control-button">Play/Pause</button>
+            <select id="quality-selector" class="control-button">
+                <option>Loading qualities...</option>
+            </select>
         </div>
     </div>
 
@@ -72,11 +93,13 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const video = document.getElementById('video');
             const qualitySelector = document.getElementById('quality-selector');
+            const playPauseButton = document.getElementById('play-pause');
             const manifestUri = "https://ssc-3-enc.edgenextcdn.net/out/v1/42e86125555242aaa2a12056832e7814/index.mpd";
             const drmKey = "7de5dd08ad8041d586c2f16ccc9490a1:5e1503f3398b34f5099933fedab847ef";
 
             const [keyId, keyValue] = drmKey.split(":");
 
+            // إعداد Shaka Player
             const player = new shaka.Player(video);
 
             player.configure({
@@ -95,8 +118,9 @@
                 await player.load(manifestUri);
                 console.log('The video has been successfully loaded!');
 
-                // Populate quality options
+                // ملء قائمة الجودات
                 const tracks = player.getVariantTracks();
+                qualitySelector.innerHTML = ''; // مسح الخيارات الافتراضية
                 tracks.forEach(track => {
                     const option = document.createElement('option');
                     option.value = track.id;
@@ -104,10 +128,21 @@
                     qualitySelector.appendChild(option);
                 });
 
-                // Change quality on selection
+                // تغيير الجودة عند الاختيار
                 qualitySelector.addEventListener('change', () => {
                     const selectedTrackId = parseInt(qualitySelector.value, 10);
                     player.selectVariantTrack(tracks.find(track => track.id === selectedTrackId), true);
+                });
+
+                // التحكم في تشغيل الفيديو
+                playPauseButton.addEventListener('click', () => {
+                    if (video.paused) {
+                        video.play();
+                        playPauseButton.textContent = 'Pause';
+                    } else {
+                        video.pause();
+                        playPauseButton.textContent = 'Play';
+                    }
                 });
             } catch (error) {
                 console.error('Error loading video', error);
