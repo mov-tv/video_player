@@ -17,9 +17,9 @@
         }
 
         #video-container {
-            width: 80%; /* عرض الفيديو 80% من عرض الشاشة */
-            max-width: 1280px; /* أقصى عرض للفيديو */
-            aspect-ratio: 16 / 9; /* نسبة أبعاد الفيديو */
+            width: 80%;
+            max-width: 1280px;
+            aspect-ratio: 16 / 9;
             background: #000;
             position: relative;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
@@ -38,14 +38,47 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const manifestUri = 'https://ssc-news-live-enc.edgenextcdn.net/out/v1/ef466f43623c4bbaa3f905b566ec35ea/index.mpd';
-            const drmKey = '3d04975236a44f62857d181597705ee6:362133e9cb13189ad4fe095ced216f60';
+        // دالة للحصول على قيم معلمات URL
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                manifestUri: params.get('manifestUri'),
+                drmKey: params.get('drmKey'),
+                primaryColor: params.get('primaryColor') || "#6F00FF",
+                autoPlay: params.get('autoPlay') === "true",
+                mute: params.get('mute') === "true",
+                playbackRateEnabled: params.get('playbackRateEnabled') === "true",
+                allowDownload: params.get('allowDownload') === "true",
+                fillToContainer: params.get('fillToContainer') === "true",
+                backgroundColor: params.get('backgroundColor') || "#000"
+            };
+        }
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            const {
+                manifestUri,
+                drmKey,
+                primaryColor,
+                autoPlay,
+                mute,
+                playbackRateEnabled,
+                allowDownload,
+                fillToContainer,
+                backgroundColor
+            } = getQueryParams();
+
+            // تغيير لون الخلفية ديناميكيًا
+            document.body.style.backgroundColor = backgroundColor;
+
+            if (!manifestUri || !drmKey) {
+                console.error('Missing manifestUri or drmKey in URL parameters.');
+                return;
+            }
+
+            const [keyId, keyValue] = drmKey.split(':');
             const video = document.getElementById('video-id');
             const player = new shaka.Player(video);
 
-            const [keyId, keyValue] = drmKey.split(':');
             player.configure({
                 drm: {
                     clearKeys: {
@@ -58,15 +91,15 @@
                 await player.load(manifestUri);
                 console.log('DRM-protected video loaded successfully.');
 
-                // Initialize FluidPlayer after Shaka loads the video
+                // تهيئة FluidPlayer بعد تحميل الفيديو
                 fluidPlayer('video-id', {
                     layoutControls: {
-                        primaryColor: "#6F00FF",
-                        autoPlay: true,
-                        mute: false,
-                        playbackRateEnabled: true,
-                        allowDownload: false,
-                        fillToContainer: false
+                        primaryColor,
+                        autoPlay,
+                        mute,
+                        playbackRateEnabled,
+                        allowDownload,
+                        fillToContainer
                     }
                 });
             } catch (error) {
