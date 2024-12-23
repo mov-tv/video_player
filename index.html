@@ -27,16 +27,11 @@
             align-items: center;
         }
 
-        #jwplayerDiv {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* ضبط الفيديو ليملأ الشاشة بالكامل */
+        /* وضع الفيديو بحيث يملأ الشاشة ويتناسب مع الأبعاد */
         video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* يملأ الشاشة ويحافظ على الأبعاد */
+            object-fit: contain; /* هذه الخاصية تجعل الفيديو يتناسب مع الأبعاد ويحافظ على تناسبه */
             position: absolute;
         }
 
