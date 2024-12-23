@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Dynamic JW Player</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Shaka Player with JW Design</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
+    <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
     <style>
         body {
             margin: 0;
+            padding: 0;
             background: #000;
             display: flex;
             justify-content: center;
@@ -14,20 +16,28 @@
             height: 100vh;
         }
 
-        #jwplayerDiv {
+        #video-container {
             width: 80%;
             max-width: 1280px;
             aspect-ratio: 16 / 9;
             background: #000;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        #jwplayerDiv {
+            width: 100%;
+            height: 100%;
         }
     </style>
-    <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
 </head>
 <body>
-    <div id="jwplayerDiv"></div>
+    <div id="video-container">
+        <div id="jwplayerDiv"></div>
+    </div>
 
     <script>
-        // دالة لاستخراج المعلمات من رابط الصفحة
+        // دالة لاستخراج المعلمات من الرابط
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
             return {
@@ -36,7 +46,7 @@
             };
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const { manifest, drmKey } = getQueryParams();
 
             if (!manifest || !drmKey) {
@@ -50,25 +60,48 @@
                 return;
             }
 
-            // إعداد JW Player
-            jwplayer("jwplayerDiv").setup({
-                file: manifest,
-                type: "dash",
-                autostart: true,
+            // تشغيل الفيديو باستخدام Shaka Player
+            const videoContainer = document.createElement('video');
+            videoContainer.controls = true;
+            videoContainer.style.display = 'none'; // إخفاء الفيديو لتجنب تداخل التصميم
+
+            document.body.appendChild(videoContainer);
+
+            const shakaPlayer = new shaka.Player(videoContainer);
+
+            shakaPlayer.configure({
                 drm: {
-                    clearkey: {
-                        keyId: keyId,
-                        key: keyValue
+                    clearKeys: {
+                        [keyId]: keyValue
                     }
-                },
-                width: "100%",
-                height: "100%",
-                skin: {
-                    name: "glow"
                 }
             });
 
-            console.log('تم إعداد الفيديو بنجاح');
+            try {
+                await shakaPlayer.load(manifest);
+                console.log('تم تحميل الفيديو المحمي بـ DRM بنجاح.');
+
+                // إعداد تصميم JW Player
+                jwplayer("jwplayerDiv").setup({
+                    file: manifest,
+                    width: "100%",
+                    height: "100%",
+                    type: "dash",
+                    autostart: true,
+                    drm: {
+                        clearkey: {
+                            keyId: keyId,
+                            key: keyValue
+                        }
+                    },
+                    skin: {
+                        name: "glow"
+                    }
+                });
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء تحميل الفيديو:', error);
+            }
         });
     </script>
 </body>
