@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>FluidPlayer with DRM</title>
-    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
+    <meta charset="UTF-8">
+    <title>Dynamic JW Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             margin: 0;
-            padding: 0;
             background: #000;
             display: flex;
             justify-content: center;
@@ -16,95 +14,61 @@
             height: 100vh;
         }
 
-        #video-container {
+        #jwplayerDiv {
             width: 80%;
             max-width: 1280px;
             aspect-ratio: 16 / 9;
             background: #000;
-            position: relative;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
         }
     </style>
+    <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
 </head>
 <body>
-    <div id="video-container">
-        <video id="video-id" controls></video>
-    </div>
+    <div id="jwplayerDiv"></div>
 
     <script>
-        // دالة للحصول على قيم معلمات URL
+        // دالة لاستخراج المعلمات من رابط الصفحة
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
             return {
-                manifestUri: params.get('manifestUri'),
-                drmKey: params.get('drmKey'),
-                primaryColor: params.get('primaryColor') || "#6F00FF",
-                autoPlay: params.get('autoPlay') === "true",
-                mute: params.get('mute') === "true",
-                playbackRateEnabled: params.get('playbackRateEnabled') === "true",
-                allowDownload: params.get('allowDownload') === "true",
-                fillToContainer: params.get('fillToContainer') === "true",
-                backgroundColor: params.get('backgroundColor') || "#000"
+                manifest: params.get('manifest'),
+                drmKey: params.get('drmkey')
             };
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const {
-                manifestUri,
-                drmKey,
-                primaryColor,
-                autoPlay,
-                mute,
-                playbackRateEnabled,
-                allowDownload,
-                fillToContainer,
-                backgroundColor
-            } = getQueryParams();
+        document.addEventListener('DOMContentLoaded', () => {
+            const { manifest, drmKey } = getQueryParams();
 
-            // تغيير لون الخلفية ديناميكيًا
-            document.body.style.backgroundColor = backgroundColor;
-
-            if (!manifestUri || !drmKey) {
-                console.error('Missing manifestUri or drmKey in URL parameters.');
+            if (!manifest || !drmKey) {
+                console.error('المعلمات مطلوبة: manifest و drmkey');
                 return;
             }
 
             const [keyId, keyValue] = drmKey.split(':');
-            const video = document.getElementById('video-id');
-            const player = new shaka.Player(video);
+            if (!keyId || !keyValue) {
+                console.error('صيغة drmkey غير صحيحة. يجب أن تكون على الشكل keyId:keyValue');
+                return;
+            }
 
-            player.configure({
+            // إعداد JW Player
+            jwplayer("jwplayerDiv").setup({
+                file: manifest,
+                type: "dash",
+                autostart: true,
                 drm: {
-                    clearKeys: {
-                        [keyId]: keyValue
+                    clearkey: {
+                        keyId: keyId,
+                        key: keyValue
                     }
+                },
+                width: "100%",
+                height: "100%",
+                skin: {
+                    name: "glow"
                 }
             });
 
-            try {
-                await player.load(manifestUri);
-                console.log('DRM-protected video loaded successfully.');
-
-                // تهيئة FluidPlayer بعد تحميل الفيديو
-                fluidPlayer('video-id', {
-                    layoutControls: {
-                        primaryColor,
-                        autoPlay,
-                        mute,
-                        playbackRateEnabled,
-                        allowDownload,
-                        fillToContainer
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading DRM video', error);
-            }
+            console.log('تم إعداد الفيديو بنجاح');
         });
     </script>
 </body>
