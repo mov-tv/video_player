@@ -2,46 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Shaka Player with JW Design</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
     <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
             background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden; /* لمنع التمرير في حالة وجود أجزاء غير مرئية */
         }
 
         #video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
             background: #000;
-            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* وضع الفيديو بحيث يملأ الشاشة ويتناسب مع الأبعاد */
+        /* فيديو يملأ الشاشة بالكامل */
         video {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* هذه الخاصية تجعل الفيديو يتناسب مع الأبعاد ويحافظ على تناسبه */
-            position: absolute;
+            object-fit: cover; /* يملأ الشاشة بالكامل */
         }
 
-        /* إخفاء زر التوسيع */
+        /* إخفاء زر التوسيع في JW Player */
         .jw-button-container .jw-icon-fullscreen {
-            display: none !important;
-        }
-
-        /* إخفاء أي زر تحكم آخر قد يسبب تداخلًا */
-        .jw-button-container .jw-icon {
             display: none !important;
         }
     </style>
@@ -128,15 +125,6 @@
                 // فرض وضع ملء الشاشة دائمًا
                 player.on('ready', async () => {
                     await enableFullscreen(document.getElementById('video-container'));
-
-                    // قفل الشاشة في الوضع الأفقي
-                    if (screen.orientation && screen.orientation.lock) {
-                        try {
-                            await screen.orientation.lock('landscape');
-                        } catch (error) {
-                            console.warn('تعذر قفل الشاشة:', error);
-                        }
-                    }
                 });
 
             } catch (error) {
