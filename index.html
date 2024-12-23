@@ -29,6 +29,11 @@
             width: 100%;
             height: 100%;
         }
+
+        /* إخفاء زر ملء الشاشة باستخدام CSS */
+        .jw-icon-fullscreen {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -102,26 +107,13 @@
                 // تشغيل الفيديو في وضع ملء الشاشة مباشرة
                 player.on('ready', () => {
                     player.setFullscreen(true);
-
-                    // البحث عن زر ملء الشاشة وإزالته نهائيًا
-                    const fullscreenButton = document.querySelector('.jw-icon-fullscreen');
-                    if (fullscreenButton) {
-                        fullscreenButton.parentNode.removeChild(fullscreenButton);
-                    }
                 });
 
-                // إضافة ميزة التدوير عند ملء الشاشة
-                player.on('fullscreen', (event) => {
-                    if (event.fullscreen) {
-                        if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch((err) => {
-                                console.warn('لم يتم قفل الشاشة:', err);
-                            });
-                        }
-                    } else {
-                        if (screen.orientation && screen.orientation.unlock) {
-                            screen.orientation.unlock();
-                        }
+                // إخفاء زر ملء الشاشة باستخدام JavaScript كاحتياط إضافي
+                player.on('ready', () => {
+                    const fullscreenButton = document.querySelector('.jw-icon-fullscreen');
+                    if (fullscreenButton) {
+                        fullscreenButton.style.display = 'none';
                     }
                 });
 
