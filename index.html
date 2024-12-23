@@ -1,44 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
     <title>Shaka Player with JW Design</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
     <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
             background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        /* الفيديو يبقى بحجم الشاشة مع الحفاظ على نسب الأبعاد الأصلية */
+        #video-container {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            position: relative;
+        }
+
         #jwplayerDiv {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* الحفاظ على الأبعاد الأصلية وملء الشاشة بما يناسب */
-        }
-
-        /* إخفاء زر التوسيع في JW Player */
+        /* إخفاء زر توسيع الشاشة */
         .jw-button-container .jw-icon-fullscreen {
             display: none !important;
+        }
+
+        /* التأكد من عدم وجود تأثير على التخطيط */
+        .jw-button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-    <div id="jwplayerDiv"></div>
+    <div id="video-container">
+        <div id="jwplayerDiv"></div>
+    </div>
 
     <script>
         // دالة لاستخراج المعلمات من الرابط
@@ -48,6 +54,17 @@
                 manifest: params.get('manifest'),
                 drmKey: params.get('drmkey')
             };
+        }
+
+        // تفعيل ملء الشاشة دائمًا
+        async function enableFullscreen(element) {
+            if (element.requestFullscreen) {
+                await element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                await element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                await element.msRequestFullscreen();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -64,7 +81,7 @@
                 return;
             }
 
-            // إعداد شاكابلير
+            // تشغيل الفيديو باستخدام Shaka Player
             const videoContainer = document.createElement('video');
             videoContainer.controls = true;
             videoContainer.style.display = 'none'; // إخفاء الفيديو لتجنب تداخل التصميم
@@ -76,46 +93,3 @@
             shakaPlayer.configure({
                 drm: {
                     clearKeys: {
-                        [keyId]: keyValue
-                    }
-                }
-            });
-
-            try {
-                await shakaPlayer.load(manifest);
-                console.log('تم تحميل الفيديو المحمي بـ DRM بنجاح.');
-
-                // إعداد تصميم JW Player
-                const player = jwplayer("jwplayerDiv").setup({
-                    file: manifest,
-                    width: "100%",
-                    height: "100%",
-                    type: "dash",
-                    autostart: true,
-                    drm: {
-                        clearkey: {
-                            keyId: keyId,
-                            key: keyValue
-                        }
-                    },
-                    skin: {
-                        name: "glow"
-                    },
-                    // تعطيل وضع ملء الشاشة تمامًا
-                    controlbar: {
-                        fullscreen: false // تعطيل زر ملء الشاشة
-                    }
-                });
-
-                // تعطيل وظيفة النقر المزدوج لملء الشاشة
-                document.getElementById("jwplayerDiv").addEventListener("dblclick", function(event) {
-                    event.preventDefault(); // منع عمل النقر المزدوج
-                });
-
-            } catch (error) {
-                console.error('حدث خطأ أثناء تحميل الفيديو:', error);
-            }
-        });
-    </script>
-</body>
-</html>
