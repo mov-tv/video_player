@@ -5,53 +5,54 @@
     <title>Custom DRM Player</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
     <style>
-        /* تعيين إعدادات الصفحة */
         body {
+            background-color: #000000;
             margin: 0;
             padding: 0;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
-        /* تصميم المشغل */
-        #player-container {
-            position: relative;
-            width: 80%;
-            max-width: 900px;
-            aspect-ratio: 16 / 9;
+        #player-container { 
+            position: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
             background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
         }
 
         video {
             width: 100%;
             height: 100%;
-            display: block;
-            background-color: #000;
+            background: #000;
         }
 
-        /* شريط التحكم */
         #controls {
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
         }
 
-        /* أزرار التحكم */
         .control-button {
             background: #6F00FF;
             color: white;
             border: none;
+            margin: 0 5px;
             padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
@@ -80,7 +81,7 @@
 </head>
 <body>
     <div id="player-container">
-        <video id="video" autoplay controls></video>
+        <video id="video" autoplay></video>
         <div id="controls">
             <button id="play-pause" class="control-button">Play/Pause</button>
             <select id="quality-selector" class="control-button">
