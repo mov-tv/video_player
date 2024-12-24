@@ -1,50 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DRM Video Player</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #000;
-    }
-    video {
-      max-width: 100%;
-      max-height: 100%;
-    }
-  </style>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Shaka Player with JW Design</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
+    <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #video-container {
+            width: 80%;
+            max-width: 1280px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        #jwplayerDiv {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* إخفاء زر ملء الشاشة باستخدام CSS */
+        .jw-icon-fullscreen {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
-  <video id="video" controls autoplay></video>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const video = document.getElementById('video');
-      const player = new shaka.Player(video);
+    <div id="video-container">
+        <div id="jwplayerDiv"></div>
+    </div>
 
-      const config = {
-        drm: {
-          clearKeys: {
-            '0a7934dddc3136a6922584b96c3fd1e5': '676e6d1dd00bfbe266003efaf0e3aa02'
-          }
+    <script>
+        // دالة لاستخراج المعلمات من الرابط
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                manifest: params.get('manifest'),
+                drmKey: params.get('drmkey')
+            };
         }
-      };
 
-      player.configure(config);
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { manifest, drmKey } = getQueryParams();
 
-      try {
-        // Load the DASH manifest URL
-        await player.load('https://live-d-01-todtv-da.akamaized.net/Content/DASH_DASH/Live/channel(ent-hd-01)/manifest.mpd');
-        console.log('The video has been loaded successfully!');
-      } catch (error) {
-        console.error('Error loading video:', error);
-      }
-    });
-  </script>
+            if (!manifest || !drmKey) {
+                console.error('المعلمات مطلوبة: manifest و drmkey');
+                return;
+            }
+
+            const [keyId, keyValue] = drmKey.split(':');
+            if (!keyId || !keyValue) {
+                console.error('صيغة drmkey غير صحيحة. يجب أن تكون على الشكل keyId:keyValue');
+                return;
+            }
+
+            // تشغيل الفيديو باستخدام Shaka Player
+            const videoContainer = document.createElement('video');
+            videoContainer.controls = true;
+            videoContainer.style.display = 'none'; // إخفاء الفيديو لتجنب تداخل التصميم
+
+            document.body.appendChild(videoContainer);
+
+            const shakaPlayer = new shaka.Player(videoContainer);
+
+            shakaPlayer.configure({
+                drm: {
+                    clearKeys: {
+                        [keyId]: keyValue
+                    }
+                }
+            });
+
+            try {
+                await shakaPlayer.load(manifest);
+                console.log('تم تحميل الفيديو المحمي بـ DRM بنجاح.');
+
+                // إعداد تصميم JW Player
+                const player = jwplayer("jwplayerDiv").setup({
+                    file: manifest,
+                    width: "100%",
+                    height: "100%",
+                    type: "dash",
+                    autostart: true,
+                    drm: {
+                        clearkey: {
+                            keyId: keyId,
+                            key: keyValue
+                        }
+                    },
+                    skin: {
+                        name: "glow"
+                    }
+                });
+
+                // تشغيل الفيديو في وضع ملء الشاشة مباشرة
+                player.on('ready', () => {
+                    player.setFullscreen(true);
+                });
+
+                // إخفاء زر ملء الشاشة باستخدام JavaScript كاحتياط إضافي
+                player.on('ready', () => {
+                    const fullscreenButton = document.querySelector('.jw-icon-fullscreen');
+                    if (fullscreenButton) {
+                        fullscreenButton.style.display = 'none';
+                    }
+                });
+
+                // تعطيل الضغط المزدوج لتغيير وضع الشاشة
+                player.on('displayClick', () => {
+                    player.setFullscreen(true); // إجبار البقاء في وضع ملء الشاشة
+                });
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء تحميل الفيديو:', error);
+            }
+        });
+    </script>
 </body>
 </html>
